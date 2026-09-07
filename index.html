@@ -1,0 +1,911 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<title>نظام پایش مطالعه — نسخهٔ اجرایی</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;600;700;800&display=swap');
+
+:root{
+  --teal:#1F4E4A;
+  --teal-d:#153835;
+  --teal-l:#DCEAE8;
+  --gold:#B8892B;
+  --gold-l:#F6ECD9;
+  --paper:#FBFAF7;
+  --ink:#28302F;
+  --ink-soft:#5B6664;
+  --line:#DDE4E2;
+  --green:#2E7D32; --green-l:#E4F3E6;
+  --yellow:#B8892B; --yellow-l:#FBF3D9;
+  --orange:#C2670E; --orange-l:#FCE7D4;
+  --red:#B5342A; --red-l:#F8D9D6;
+}
+*{box-sizing:border-box;}
+html,body{margin:0;padding:0;background:var(--paper);color:var(--ink);font-family:'Vazirmatn',Tahoma,sans-serif;}
+body{display:flex;min-height:100vh;}
+
+/* ---------- sidebar ---------- */
+#sidebar{
+  width:236px;flex:0 0 236px;background:var(--teal-d);color:#EAF2F0;
+  padding:22px 16px;display:flex;flex-direction:column;gap:2px;
+}
+#sidebar .brand{padding:0 6px 18px;border-bottom:1px solid rgba(255,255,255,.12);margin-bottom:14px;}
+#sidebar .brand b{display:block;font-size:16px;font-weight:800;color:#fff;}
+#sidebar .brand span{display:block;font-size:11.5px;color:#9FC1BC;margin-top:3px;}
+.nav-group{font-size:11px;color:#8FB4AF;margin:14px 8px 6px;letter-spacing:.02em;}
+.nav-item{
+  display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:8px;cursor:pointer;
+  font-size:13.5px;color:#D9E8E5;transition:background .12s ease;
+}
+.nav-item .num{
+  width:20px;height:20px;border-radius:6px;background:rgba(255,255,255,.08);color:#BFDAD6;
+  font-size:11px;display:flex;align-items:center;justify-content:center;flex:0 0 20px;font-weight:700;
+}
+.nav-item:hover{background:rgba(255,255,255,.07);}
+.nav-item.active{background:var(--gold);color:#2A2000;}
+.nav-item.active .num{background:rgba(0,0,0,.18);color:#2A2000;}
+
+/* ---------- main ---------- */
+#main{flex:1;padding:26px 34px 60px;max-width:1180px;}
+.topbar{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:22px;flex-wrap:wrap;}
+.student-picker{display:flex;align-items:center;gap:10px;}
+.student-picker label{font-size:12.5px;color:var(--ink-soft);}
+select, input[type=text], input[type=number], input[type=date], textarea{
+  font-family:inherit;font-size:13.5px;border:1px solid var(--line);border-radius:8px;
+  padding:8px 10px;background:#fff;color:var(--ink);
+}
+select{min-width:190px;}
+textarea{width:100%;resize:vertical;min-height:64px;line-height:1.7;}
+
+h1.page-title{font-size:22px;font-weight:800;color:var(--teal);margin:0 0 4px;}
+p.page-sub{font-size:13px;color:var(--ink-soft);margin:0 0 22px;font-style:italic;}
+.kicker{font-size:11.5px;font-weight:700;color:var(--gold);letter-spacing:.02em;margin-bottom:2px;}
+
+.card{background:#fff;border:1px solid var(--line);border-radius:12px;padding:18px 20px;margin-bottom:16px;}
+.card h3{margin:0 0 14px;font-size:14.5px;font-weight:700;color:var(--teal);border-bottom:2px solid var(--gold-l);padding-bottom:8px;}
+.field-row{display:flex;flex-direction:column;gap:5px;margin-bottom:14px;}
+.field-row label{font-size:12.5px;font-weight:600;color:var(--ink-soft);}
+.field-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px 18px;}
+.field-grid.cols-3{grid-template-columns:1fr 1fr 1fr;}
+@media(max-width:760px){.field-grid,.field-grid.cols-3{grid-template-columns:1fr;}}
+
+/* rating rows */
+.rating-item{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 4px;border-bottom:1px dashed var(--line);}
+.rating-item:last-child{border-bottom:none;}
+.rating-item .rlabel{font-size:13px;flex:1;}
+.rating-scale{display:flex;gap:6px;direction:ltr;}
+.rating-scale button{
+  width:30px;height:30px;border-radius:8px;border:1px solid var(--line);background:#fff;color:var(--ink-soft);
+  font-size:12.5px;cursor:pointer;font-family:inherit;font-weight:700;
+}
+.rating-scale button.on{background:var(--teal);border-color:var(--teal);color:#fff;}
+
+.score-pill{display:inline-flex;align-items:center;gap:8px;background:var(--gold-l);color:var(--teal-d);
+  padding:8px 16px;border-radius:999px;font-weight:800;font-size:15px;margin-top:6px;}
+
+.level-tag{display:inline-flex;align-items:center;gap:6px;padding:3px 11px;border-radius:999px;font-size:12px;font-weight:700;}
+.level-tag.green{background:var(--green-l);color:var(--green);}
+.level-tag.yellow{background:var(--yellow-l);color:#8a6a1a;}
+.level-tag.orange{background:var(--orange-l);color:var(--orange);}
+.level-tag.red{background:var(--red-l);color:var(--red);}
+.level-tag .dot{width:8px;height:8px;border-radius:50%;background:currentColor;}
+
+.chk-group{display:flex;flex-wrap:wrap;gap:8px 18px;}
+.chk-group label{display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer;}
+.chk-group input{width:15px;height:15px;accent-color:var(--teal);}
+
+.btn{border:none;border-radius:8px;padding:9px 18px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;}
+.btn-primary{background:var(--teal);color:#fff;}
+.btn-primary:hover{background:var(--teal-d);}
+.btn-ghost{background:#fff;border:1px solid var(--line);color:var(--ink);}
+.btn-ghost:hover{background:#F3F1EC;}
+.btn-danger{background:#fff;border:1px solid var(--red);color:var(--red);}
+.btn-row{display:flex;gap:10px;margin-top:16px;align-items:center;}
+.saved-note{font-size:12px;color:var(--green);opacity:0;transition:opacity .2s;}
+.saved-note.show{opacity:1;}
+
+table.entry-table{width:100%;border-collapse:collapse;font-size:13px;}
+table.entry-table th,table.entry-table td{border:1px solid var(--line);padding:8px 10px;text-align:right;}
+table.entry-table th{background:var(--teal);color:#fff;font-weight:700;font-size:12.5px;}
+table.entry-table tr:nth-child(even) td{background:#F7F6F2;}
+.arrow-up{color:var(--green);font-weight:800;}
+.arrow-down{color:var(--red);font-weight:800;}
+.arrow-flat{color:var(--ink-soft);font-weight:800;}
+
+.empty-hint{color:var(--ink-soft);font-size:13px;padding:20px 4px;text-align:center;background:#F7F6F2;border-radius:10px;border:1px dashed var(--line);}
+
+.stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px;}
+@media(max-width:900px){.stat-grid{grid-template-columns:repeat(2,1fr);}}
+.stat-card{background:#fff;border:1px solid var(--line);border-radius:12px;padding:16px 18px;border-top:3px solid var(--gold);}
+.stat-card .n{font-size:26px;font-weight:800;color:var(--teal);}
+.stat-card .lab{font-size:12px;color:var(--ink-soft);margin-top:2px;}
+
+.student-row{display:flex;align-items:center;justify-content:space-between;padding:12px 14px;border:1px solid var(--line);border-radius:10px;margin-bottom:8px;background:#fff;}
+.student-row .name{font-weight:700;font-size:14px;}
+.student-row .cls{font-size:12px;color:var(--ink-soft);}
+.pill-list{display:flex;gap:6px;}
+
+.history-item{border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin-bottom:10px;background:#fff;}
+.history-item .hh{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;}
+.history-item .hh b{font-size:13.5px;}
+.history-item .hh .del{font-size:11px;color:var(--red);cursor:pointer;background:none;border:none;font-family:inherit;}
+</style>
+</head>
+<body>
+
+<div id="sidebar">
+  <div class="brand"><b>نظام پایش مطالعه</b><span>مبتنی بر متد NEVA — خسروی</span></div>
+  <div id="nav"></div>
+</div>
+<div id="main"></div>
+
+<script>
+/* ================= storage helpers ================= */
+async function sget(key){ try{ const r = await window.storage.get(key,false); return r ? JSON.parse(r.value) : null; }catch(e){ return null; } }
+async function sset(key,val){ try{ await window.storage.set(key, JSON.stringify(val), false); }catch(e){ console.error(e);} }
+async function idxAdd(idxKey, id){ const arr = (await sget(idxKey)) || []; if(!arr.includes(id)){ arr.unshift(id); await sset(idxKey, arr);} }
+async function idxRemove(idxKey, id){ const arr = (await sget(idxKey)) || []; await sset(idxKey, arr.filter(x=>x!==id)); }
+function uid(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,6); }
+
+/* ================= app state ================= */
+let students = [];
+let currentStudentId = null;
+let currentView = 'dashboard';
+
+const NAV = [
+  {group:'نمای کلی', items:[
+    {id:'dashboard', label:'داشبورد پایه'},
+    {id:'students', label:'دانش‌آموزان'},
+  ]},
+  {group:'چرخهٔ فردی', items:[
+    {id:'form1', num:'۱', label:'ارزیابی اولیه'},
+    {id:'form2', num:'۲', label:'برنامهٔ هفتگی'},
+    {id:'form3', num:'۳', label:'پروندهٔ رشد'},
+    {id:'form4', num:'۴', label:'مدیریت زمان'},
+    {id:'form5', num:'۵', label:'پایش هفتگی'},
+    {id:'form6', num:'۶', label:'تحلیل کارسنج'},
+    {id:'form7', num:'۷', label:'کوچینگ فردی'},
+    {id:'form8', num:'۸', label:'هشدار زودهنگام'},
+    {id:'form9', num:'۹', label:'گزارش خانواده'},
+    {id:'form10', num:'۱۰', label:'تحلیل آزمون'},
+  ]},
+  {group:'گزارش پایه', items:[
+    {id:'form12', num:'۱۲', label:'گزارش ماهانهٔ پایه'},
+  ]},
+];
+
+const STUDENT_SCOPED = ['form1','form2','form3','form4','form5','form6','form7','form8','form9','form10'];
+
+/* ================= rating field config ================= */
+const F1_ITEMS = ["داشتن برنامهٔ مشخص","اجرای برنامه","استمرار مطالعه","مدیریت زمان","شروع مطالعه بدون تذکر","انجام به‌موقع تکالیف","کیفیت مطالعه","مرور مطالب","خودارزیابی","تحلیل عملکرد و آزمون"];
+const F4_ITEMS = ["برنامهٔ هفتگی طراحی می‌کنم","اولویت‌بندی می‌کنم","زمان موردنیاز را تخمین می‌زنم","برنامهٔ واقع‌بینانه می‌نویسم","برنامه را اجرا می‌کنم","عقب‌ماندگی را جبران می‌کنم","بدون تذکر شروع می‌کنم"];
+const F7_ITEMS = ["برنامه‌ریزی","اجرا","استقلال","مسئولیت‌پذیری","مدیریت زمان","استمرار"];
+const F5_ITEMS = ["داشتن برنامه","اجرای برنامه","استمرار","مدیریت زمان","انجام تکالیف","شروع بدون تذکر","کیفیت مطالعه","جبران عقب‌ماندگی"];
+const F5_SCALE = [{v:1,l:"ضعیف"},{v:2,l:"متوسط"},{v:3,l:"خوب"},{v:4,l:"عالی"}];
+const F8_ITEMS = ["کاهش ساعت مطالعه","کاهش اجرای برنامه","افزایش تکالیف انجام‌نشده","افزایش نیاز به تذکر","افت عملکرد آزمون","کاهش استمرار","کاهش انگیزه","افزایش غیبت/تأخیر","کاهش تمرکز"];
+
+function levelFromScore(pct){
+  // pct 0-100
+  if(pct>=82) return {c:'green', l:'سبز — پایدار'};
+  if(pct>=62) return {c:'yellow', l:'زرد — نیازمند توجه'};
+  if(pct>=42) return {c:'orange', l:'نارنجی — نیازمند پیگیری'};
+  return {c:'red', l:'قرمز — نیازمند مداخله'};
+}
+function levelFromWarnCount(n){
+  if(n<=1) return {c:'green', l:'سبز'};
+  if(n===2) return {c:'yellow', l:'زرد'};
+  if(n<=4) return {c:'orange', l:'نارنجی'};
+  return {c:'red', l:'قرمز'};
+}
+function levelTag(level){
+  return `<span class="level-tag ${level.c}"><span class="dot"></span>${level.l}</span>`;
+}
+function arrow(curr, prev){
+  if(prev===null||prev===undefined||isNaN(prev)) return '<span class="arrow-flat">→</span>';
+  if(curr>prev) return '<span class="arrow-up">↑</span>';
+  if(curr<prev) return '<span class="arrow-down">↓</span>';
+  return '<span class="arrow-flat">→</span>';
+}
+
+/* ================= render: sidebar ================= */
+function renderNav(){
+  const nav = document.getElementById('nav');
+  nav.innerHTML = '';
+  NAV.forEach(g=>{
+    const gEl = document.createElement('div');
+    gEl.className='nav-group'; gEl.textContent=g.group;
+    nav.appendChild(gEl);
+    g.items.forEach(it=>{
+      const el = document.createElement('div');
+      el.className = 'nav-item'+(currentView===it.id?' active':'');
+      el.innerHTML = (it.num?`<span class="num">${it.num}</span>`:'<span class="num">•</span>')+`<span>${it.label}</span>`;
+      el.onclick = ()=>{ currentView = it.id; render(); };
+      nav.appendChild(el);
+    });
+  });
+}
+
+/* ================= student picker ================= */
+function studentPickerHTML(){
+  if(!STUDENT_SCOPED.includes(currentView)) return '';
+  const opts = students.map(s=>`<option value="${s.id}" ${s.id===currentStudentId?'selected':''}>${s.name} — ${s.class||''}</option>`).join('');
+  return `<div class="student-picker"><label>دانش‌آموز:</label><select id="studentSelect">${opts||'<option>ابتدا دانش‌آموز اضافه کنید</option>'}</select></div>`;
+}
+
+/* ================= MAIN RENDER ================= */
+async function render(){
+  renderNav();
+  const main = document.getElementById('main');
+  if(STUDENT_SCOPED.includes(currentView) && students.length===0){
+    main.innerHTML = `<div class="topbar"></div><div class="empty-hint">برای شروع، از بخش «دانش‌آموزان» یک دانش‌آموز اضافه کنید.</div>`;
+    return;
+  }
+  if(STUDENT_SCOPED.includes(currentView) && !currentStudentId){
+    currentStudentId = students[0].id;
+  }
+  main.innerHTML = `<div class="topbar"><div></div>${studentPickerHTML()}</div><div id="viewBody"></div>`;
+  const sel = document.getElementById('studentSelect');
+  if(sel) sel.onchange = ()=>{ currentStudentId = sel.value; render(); };
+
+  const body = document.getElementById('viewBody');
+  switch(currentView){
+    case 'dashboard': await renderDashboard(body); break;
+    case 'students': await renderStudents(body); break;
+    case 'form1': await renderForm1(body); break;
+    case 'form2': await renderForm2(body); break;
+    case 'form3': await renderForm3(body); break;
+    case 'form4': await renderForm4(body); break;
+    case 'form5': await renderForm5(body); break;
+    case 'form6': await renderForm6(body); break;
+    case 'form7': await renderForm7(body); break;
+    case 'form8': await renderForm8(body); break;
+    case 'form9': await renderForm9(body); break;
+    case 'form10': await renderForm10(body); break;
+    case 'form12': await renderForm12(body); break;
+  }
+}
+
+/* ================= DASHBOARD (فرم ۱۱) ================= */
+async function renderDashboard(body){
+  let rows = '';
+  let counts = {green:0, yellow:0, orange:0, red:0};
+  for(const s of students){
+    const f1 = await sget('s:form1:'+s.id);
+    const f1pct = f1 ? Math.round((f1.total/50)*100) : null;
+    const f5idx = (await sget('idx:form5:'+s.id))||[];
+    let f5pct = null;
+    if(f5idx.length){ const last = await sget('e:form5:'+s.id+':'+f5idx[0]); if(last) f5pct = Math.round((last.total/32)*100); }
+    const f8idx = (await sget('idx:form8:'+s.id))||[];
+    let warnLevel = {c:'green',l:'سبز'};
+    if(f8idx.length){ const last = await sget('e:form8:'+s.id+':'+f8idx[0]); if(last) warnLevel = levelFromWarnCount(last.count); }
+    const f10idx = (await sget('idx:form10:'+s.id))||[];
+    let examArrow = '<span class="arrow-flat">→</span>';
+    if(f10idx.length>=2){ const a = await sget('e:form10:'+s.id+':'+f10idx[0]); const b = await sget('e:form10:'+s.id+':'+f10idx[1]); if(a&&b) examArrow = arrow(parseFloat(a.score), parseFloat(b.score)); }
+    counts[warnLevel.c]++;
+    rows += `<tr>
+      <td><b>${s.name}</b><br><span style="color:var(--ink-soft);font-size:11.5px">${s.class||''}</span></td>
+      <td>${f1pct!==null? f1pct+'٪' : '—'}</td>
+      <td>${f5pct!==null? f5pct+'٪' : '—'}</td>
+      <td>${examArrow}</td>
+      <td>${levelTag(warnLevel)}</td>
+    </tr>`;
+  }
+  body.innerHTML = `
+    <h1 class="page-title">داشبورد فردی مسئول پایه</h1>
+    <p class="page-sub">نمای یک‌نگاه از وضعیت همهٔ دانش‌آموزان — معادل دیجیتال فرم ۱۱</p>
+    <div class="stat-grid">
+      <div class="stat-card"><div class="n">${students.length}</div><div class="lab">تعداد دانش‌آموزان</div></div>
+      <div class="stat-card" style="border-top-color:var(--green)"><div class="n">${counts.green}</div><div class="lab">وضعیت سبز</div></div>
+      <div class="stat-card" style="border-top-color:var(--orange)"><div class="n">${counts.orange}</div><div class="lab">وضعیت نارنجی</div></div>
+      <div class="stat-card" style="border-top-color:var(--red)"><div class="n">${counts.red}</div><div class="lab">وضعیت قرمز</div></div>
+    </div>
+    ${students.length? `<div class="card"><h3>وضعیت دانش‌آموزان</h3>
+    <table class="entry-table"><thead><tr><th>دانش‌آموز</th><th>خط مبنا (فرم ۱)</th><th>آخرین پایش هفتگی</th><th>روند آزمون</th><th>سطح هشدار</th></tr></thead>
+    <tbody>${rows}</tbody></table></div>` : `<div class="empty-hint">هنوز دانش‌آموزی ثبت نشده است.</div>`}
+  `;
+}
+
+/* ================= STUDENTS ================= */
+async function renderStudents(body){
+  body.innerHTML = `
+    <h1 class="page-title">دانش‌آموزان</h1>
+    <p class="page-sub">فهرست دانش‌آموزان تحت پایش این پایه</p>
+    <div class="card">
+      <h3>افزودن دانش‌آموز</h3>
+      <div class="field-grid cols-3">
+        <div class="field-row"><label>نام و نام خانوادگی</label><input type="text" id="newName"></div>
+        <div class="field-row"><label>کلاس</label><input type="text" id="newClass"></div>
+      </div>
+      <div class="btn-row"><button class="btn btn-primary" id="addStudentBtn">افزودن</button></div>
+    </div>
+    <div id="studentList"></div>
+  `;
+  const list = document.getElementById('studentList');
+  if(students.length===0){ list.innerHTML = '<div class="empty-hint">هنوز دانش‌آموزی اضافه نشده است.</div>'; }
+  else{
+    list.innerHTML = students.map(s=>`
+      <div class="student-row">
+        <div><div class="name">${s.name}</div><div class="cls">${s.class||''}</div></div>
+        <div class="pill-list"><button class="btn btn-ghost" data-open="${s.id}">مشاهدهٔ پرونده</button><button class="btn btn-danger" data-del="${s.id}">حذف</button></div>
+      </div>`).join('');
+    list.querySelectorAll('[data-open]').forEach(b=> b.onclick = ()=>{ currentStudentId=b.dataset.open; currentView='form3'; render(); });
+    list.querySelectorAll('[data-del]').forEach(b=> b.onclick = async ()=>{
+      if(!confirm('این دانش‌آموز حذف شود؟')) return;
+      students = students.filter(s=>s.id!==b.dataset.del);
+      await sset('students', students);
+      if(currentStudentId===b.dataset.del) currentStudentId = students[0]?students[0].id:null;
+      render();
+    });
+  }
+  document.getElementById('addStudentBtn').onclick = async ()=>{
+    const name = document.getElementById('newName').value.trim();
+    const cls = document.getElementById('newClass').value.trim();
+    if(!name) return;
+    const s = {id:uid(), name, class:cls};
+    students.push(s);
+    await sset('students', students);
+    currentStudentId = s.id;
+    render();
+  };
+}
+
+/* ================= generic rating widget ================= */
+function ratingWidget(containerId, items, current, onChange){
+  const el = document.getElementById(containerId);
+  el.innerHTML = items.map((it,i)=>{
+    const val = current[i]||0;
+    const btns = [1,2,3,4,5].map(n=>`<button data-i="${i}" data-v="${n}" class="${n===val?'on':''}">${n}</button>`).join('');
+    return `<div class="rating-item"><span class="rlabel">${it}</span><div class="rating-scale">${btns}</div></div>`;
+  }).join('');
+  el.querySelectorAll('button').forEach(b=>{
+    b.onclick = ()=>{ current[+b.dataset.i] = +b.dataset.v; ratingWidget(containerId, items, current, onChange); onChange(current); };
+  });
+}
+
+/* ================= FORM 1 ================= */
+async function renderForm1(body){
+  const key = 's:form1:'+currentStudentId;
+  let data = (await sget(key)) || {scores:Array(F1_ITEMS.length).fill(0), avgPrev:'', barriers:[], notes:''};
+  body.innerHTML = `
+    <div class="kicker">فرم ۱</div>
+    <h1 class="page-title">ارزیابی اولیهٔ وضعیت مطالعه</h1>
+    <p class="page-sub">تعیین خط مبنای واقعی دانش‌آموز پیش از طراحی برنامه</p>
+    <div class="card">
+      <h3>شاخص‌های وضعیت مطالعه (۱ تا ۵)</h3>
+      <div id="f1rating"></div>
+      <div id="f1score"></div>
+    </div>
+    <div class="card">
+      <h3>موانع اصلی</h3>
+      <div class="chk-group" id="f1barriers">
+        ${["نداشتن برنامه","ناتوانی در اجرا","اهمال‌کاری","مدیریت زمان","حواس‌پرتی","تلفن همراه","حجم تکالیف","ضعف در درس خاص","خستگی","کاهش انگیزه","وابستگی به والدین","نداشتن روش مطالعه"].map(b=>`<label><input type="checkbox" value="${b}" ${data.barriers.includes(b)?'checked':''}> ${b}</label>`).join('')}
+      </div>
+    </div>
+    <div class="card">
+      <h3>جمع‌بندی مسئول پایه</h3>
+      <div class="field-row"><label>مسئلهٔ اصلی دانش‌آموز و اولویت مداخله</label><textarea id="f1notes">${data.notes||''}</textarea></div>
+      <div class="btn-row"><button class="btn btn-primary" id="f1save">ذخیره</button><span class="saved-note" id="f1saved">ذخیره شد</span></div>
+    </div>
+  `;
+  function updateScore(){
+    const total = data.scores.reduce((a,b)=>a+b,0);
+    const lvl = levelFromScore(Math.round(total/50*100));
+    document.getElementById('f1score').innerHTML = `<div class="score-pill">جمع امتیاز: ${total} / ۵۰</div> ${levelTag(lvl)}`;
+  }
+  ratingWidget('f1rating', F1_ITEMS, data.scores, ()=>updateScore());
+  updateScore();
+  document.getElementById('f1save').onclick = async ()=>{
+    data.barriers = [...document.querySelectorAll('#f1barriers input:checked')].map(i=>i.value);
+    data.notes = document.getElementById('f1notes').value;
+    data.total = data.scores.reduce((a,b)=>a+b,0);
+    await sset(key, data);
+    flashSaved('f1saved');
+  };
+}
+
+/* ================= FORM 2 (weekly plan, timeseries) ================= */
+async function renderForm2(body){
+  const idxKey = 'idx:form2:'+currentStudentId;
+  const idx = (await sget(idxKey))||[];
+  body.innerHTML = `
+    <div class="kicker">فرم ۲</div>
+    <h1 class="page-title">برنامهٔ مطالعاتی هفتگی</h1>
+    <p class="page-sub">برنامه بر اساس وضعیت واقعی، ظرفیت دانش‌آموز و نتایج پایش طراحی می‌شود</p>
+    <div class="card">
+      <h3>برنامهٔ هفتهٔ جدید</h3>
+      <div class="field-grid">
+        <div class="field-row"><label>بازهٔ برنامه</label><input type="text" id="f2range" placeholder="مثلاً هفتهٔ ۳ آبان"></div>
+        <div class="field-row"><label>هدف اصلی این هفته</label><input type="text" id="f2goal"></div>
+      </div>
+      <div class="field-row"><label>برنامهٔ روزانه (درس/فعالیت هر روز)</label><textarea id="f2days" placeholder="شنبه: ...&#10;یکشنبه: ..."></textarea></div>
+      <div class="field-grid cols-3">
+        <div class="field-row"><label>ساعت مطالعه هدف</label><input type="number" id="f2hTarget"></div>
+        <div class="field-row"><label>روزهای مطالعه هدف</label><input type="number" id="f2dTarget"></div>
+        <div class="field-row"><label>تکالیف هدف</label><input type="number" id="f2tTarget"></div>
+      </div>
+      <div class="field-row"><label>بزرگ‌ترین مانع احتمالی و راهکار</label><textarea id="f2barrier"></textarea></div>
+      <div class="btn-row"><button class="btn btn-primary" id="f2save">ثبت برنامهٔ هفته</button><span class="saved-note" id="f2saved">ذخیره شد</span></div>
+    </div>
+    <div class="card"><h3>سوابق برنامهٔ هفتگی</h3><div id="f2hist"></div></div>
+  `;
+  document.getElementById('f2save').onclick = async ()=>{
+    const id = uid();
+    const entry = {
+      range: document.getElementById('f2range').value,
+      goal: document.getElementById('f2goal').value,
+      days: document.getElementById('f2days').value,
+      hTarget: document.getElementById('f2hTarget').value,
+      dTarget: document.getElementById('f2dTarget').value,
+      tTarget: document.getElementById('f2tTarget').value,
+      barrier: document.getElementById('f2barrier').value,
+      date: new Date().toLocaleDateString('fa-IR'),
+    };
+    await sset('e:form2:'+currentStudentId+':'+id, entry);
+    await idxAdd(idxKey, id);
+    flashSaved('f2saved');
+    renderForm2(body);
+  };
+  const hist = document.getElementById('f2hist');
+  if(!idx.length){ hist.innerHTML = '<div class="empty-hint">هنوز برنامه‌ای ثبت نشده است.</div>'; return; }
+  let html='';
+  for(const id of idx){
+    const e = await sget('e:form2:'+currentStudentId+':'+id);
+    if(!e) continue;
+    html += `<div class="history-item"><div class="hh"><b>${e.range||'بدون عنوان'} <span style="color:var(--ink-soft);font-weight:400">— ثبت‌شده ${e.date}</span></b><button class="del" data-id="${id}">حذف</button></div>
+      <div style="font-size:13px">هدف: ${e.goal||'—'}</div>
+      <div style="font-size:12.5px;color:var(--ink-soft);margin-top:4px;white-space:pre-line">${e.days||''}</div>
+      <div style="font-size:12px;margin-top:6px">اهداف عددی: ساعت ${e.hTarget||'—'} | روز ${e.dTarget||'—'} | تکلیف ${e.tTarget||'—'}</div>
+    </div>`;
+  }
+  hist.innerHTML = html;
+  hist.querySelectorAll('.del').forEach(b=> b.onclick = async ()=>{
+    await idxRemove(idxKey, b.dataset.id);
+    renderForm2(body);
+  });
+}
+
+/* ================= FORM 3 (auto growth record) ================= */
+async function renderForm3(body){
+  const s = students.find(x=>x.id===currentStudentId);
+  const f1 = await sget('s:form1:'+currentStudentId);
+  const f5idx = (await sget('idx:form5:'+currentStudentId))||[];
+  const f8idx = (await sget('idx:form8:'+currentStudentId))||[];
+  let f5rows='';
+  for(const id of [...f5idx].reverse()){
+    const e = await sget('e:form5:'+currentStudentId+':'+id);
+    if(e) f5rows += `<tr><td>${e.week||'—'}</td><td>${e.total}/32</td><td>${levelTag(levelFromScore(Math.round(e.total/32*100)))}</td></tr>`;
+  }
+  body.innerHTML = `
+    <div class="kicker">فرم ۳ — به‌صورت خودکار از داده‌های سایر فرم‌ها ساخته می‌شود</div>
+    <h1 class="page-title">پروندهٔ پایش و رشد — ${s?s.name:''}</h1>
+    <p class="page-sub">این پرونده در طول سال به‌طور خودکار از فرم‌های ۱، ۵ و ۸ تکمیل می‌شود</p>
+    <div class="card"><h3>خط مبنا (فرم ۱)</h3>
+      ${f1? `<div class="score-pill">${f1.total} / ۵۰</div> ${levelTag(levelFromScore(Math.round(f1.total/50*100)))}` : '<div class="empty-hint">فرم ۱ هنوز تکمیل نشده است.</div>'}
+    </div>
+    <div class="card"><h3>روند پایش هفتگی (فرم ۵)</h3>
+      ${f5rows? `<table class="entry-table"><thead><tr><th>هفته</th><th>امتیاز</th><th>وضعیت</th></tr></thead><tbody>${f5rows}</tbody></table>` : '<div class="empty-hint">هنوز پایش هفتگی ثبت نشده است.</div>'}
+    </div>
+    <div class="card"><h3>تعداد هشدارهای ثبت‌شده (فرم ۸)</h3>
+      <div class="stat-card" style="width:160px"><div class="n">${f8idx.length}</div><div class="lab">مورد هشدار در پرونده</div></div>
+    </div>
+  `;
+}
+
+/* ================= FORM 4 (before/after skill assessment, snapshot) ================= */
+async function renderForm4(body){
+  const key = 's:form4:'+currentStudentId;
+  let data = (await sget(key)) || {before:Array(F4_ITEMS.length).fill(0), after:Array(F4_ITEMS.length).fill(0), priorities:'', wasteFactor:'', solution:''};
+  body.innerHTML = `
+    <div class="kicker">فرم ۴</div>
+    <h1 class="page-title">ارزیابی آموزش برنامه‌ریزی و مدیریت زمان</h1>
+    <div class="field-grid">
+      <div class="card"><h3>قبل از آموزش</h3><div id="f4before"></div><div id="f4beforeScore"></div></div>
+      <div class="card"><h3>بعد از آموزش</h3><div id="f4after"></div><div id="f4afterScore"></div></div>
+    </div>
+    <div class="card">
+      <h3>تمرین عملی</h3>
+      <div class="field-row"><label>سه اولویت</label><textarea id="f4pri">${data.priorities||''}</textarea></div>
+      <div class="field-grid">
+        <div class="field-row"><label>مهم‌ترین عامل اتلاف زمان</label><input type="text" id="f4waste" value="${data.wasteFactor||''}"></div>
+        <div class="field-row"><label>راهکار</label><input type="text" id="f4sol" value="${data.solution||''}"></div>
+      </div>
+      <div class="btn-row"><button class="btn btn-primary" id="f4save">ذخیره</button><span class="saved-note" id="f4saved">ذخیره شد</span></div>
+    </div>
+  `;
+  function beforeScore(){ const t=data.before.reduce((a,b)=>a+b,0); document.getElementById('f4beforeScore').innerHTML = `<div class="score-pill">${t} / ۳۵</div>`; }
+  function afterScore(){ const t=data.after.reduce((a,b)=>a+b,0); document.getElementById('f4afterScore').innerHTML = `<div class="score-pill">${t} / ۳۵</div>`; }
+  ratingWidget('f4before', F4_ITEMS, data.before, beforeScore); beforeScore();
+  ratingWidget('f4after', F4_ITEMS, data.after, afterScore); afterScore();
+  document.getElementById('f4save').onclick = async ()=>{
+    data.priorities = document.getElementById('f4pri').value;
+    data.wasteFactor = document.getElementById('f4waste').value;
+    data.solution = document.getElementById('f4sol').value;
+    await sset(key, data);
+    flashSaved('f4saved');
+  };
+}
+
+/* ================= FORM 5 (weekly checklist, timeseries) ================= */
+async function renderForm5(body){
+  const idxKey = 'idx:form5:'+currentStudentId;
+  const idx = (await sget(idxKey))||[];
+  let scores = Array(F5_ITEMS.length).fill(1);
+  body.innerHTML = `
+    <div class="kicker">فرم ۵</div>
+    <h1 class="page-title">چک‌لیست هفتگی پایش اجرای برنامه</h1>
+    <div class="card">
+      <h3>ثبت پایش این هفته</h3>
+      <div class="field-row"><label>هفته / تاریخ</label><input type="text" id="f5week" placeholder="مثلاً هفتهٔ ۵ آذر"></div>
+      <div id="f5items"></div>
+      <div id="f5score"></div>
+      <div class="field-grid cols-3" style="margin-top:14px">
+        <div class="field-row"><label>ساعت مطالعهٔ ثبت‌شده</label><input type="number" id="f5hours"></div>
+        <div class="field-row"><label>روزهای مطالعه</label><input type="number" id="f5days"></div>
+        <div class="field-row"><label>موارد نیازمند تذکر</label><input type="number" id="f5reminders"></div>
+      </div>
+      <div class="field-row"><label>نقطهٔ قوت هفته / مهم‌ترین افت / اقدام اصلاحی</label><textarea id="f5notes"></textarea></div>
+      <div class="btn-row"><button class="btn btn-primary" id="f5save">ثبت پایش هفته</button><span class="saved-note" id="f5saved">ذخیره شد</span></div>
+    </div>
+    <div class="card"><h3>سوابق پایش هفتگی</h3><div id="f5hist"></div></div>
+  `;
+  function renderItems(){
+    document.getElementById('f5items').innerHTML = F5_ITEMS.map((it,i)=>{
+      const btns = F5_SCALE.map(o=>`<button data-i="${i}" data-v="${o.v}" class="${scores[i]===o.v?'on':''}" style="width:auto;padding:0 10px">${o.l}</button>`).join('');
+      return `<div class="rating-item"><span class="rlabel">${it}</span><div class="rating-scale">${btns}</div></div>`;
+    }).join('');
+    document.querySelectorAll('#f5items button').forEach(b=> b.onclick = ()=>{ scores[+b.dataset.i]=+b.dataset.v; renderItems(); updateF5Score(); });
+  }
+  function updateF5Score(){
+    const total = scores.reduce((a,b)=>a+b,0);
+    const lvl = levelFromScore(Math.round(total/(F5_ITEMS.length*4)*100));
+    document.getElementById('f5score').innerHTML = `<div class="score-pill">جمع: ${total} / ${F5_ITEMS.length*4}</div> ${levelTag(lvl)}`;
+  }
+  renderItems(); updateF5Score();
+  document.getElementById('f5save').onclick = async ()=>{
+    const id = uid();
+    const entry = {
+      week: document.getElementById('f5week').value,
+      scores: [...scores],
+      total: scores.reduce((a,b)=>a+b,0),
+      hours: document.getElementById('f5hours').value,
+      days: document.getElementById('f5days').value,
+      reminders: document.getElementById('f5reminders').value,
+      notes: document.getElementById('f5notes').value,
+      date: new Date().toLocaleDateString('fa-IR'),
+    };
+    await sset('e:form5:'+currentStudentId+':'+id, entry);
+    await idxAdd(idxKey, id);
+    flashSaved('f5saved');
+    renderForm5(body);
+  };
+  const hist = document.getElementById('f5hist');
+  if(!idx.length){ hist.innerHTML='<div class="empty-hint">هنوز پایشی ثبت نشده است.</div>'; return; }
+  let html='';
+  for(const id of idx){
+    const e = await sget('e:form5:'+currentStudentId+':'+id);
+    if(!e) continue;
+    const lvl = levelFromScore(Math.round(e.total/(F5_ITEMS.length*4)*100));
+    html += `<div class="history-item"><div class="hh"><b>${e.week||'بدون عنوان'}</b><button class="del" data-id="${id}">حذف</button></div>
+      <div style="font-size:13px">امتیاز: ${e.total}/${F5_ITEMS.length*4} — ${levelTag(lvl)}</div>
+      <div style="font-size:12px;color:var(--ink-soft);margin-top:4px">ساعت: ${e.hours||'—'} | روز: ${e.days||'—'} | تذکر: ${e.reminders||'—'}</div>
+      ${e.notes? `<div style="font-size:12.5px;margin-top:6px;white-space:pre-line">${e.notes}</div>`:''}
+    </div>`;
+  }
+  hist.innerHTML = html;
+  hist.querySelectorAll('.del').forEach(b=> b.onclick = async ()=>{ await idxRemove(idxKey,b.dataset.id); renderForm5(body); });
+}
+
+/* ================= FORM 6 (auto trend from form5) ================= */
+async function renderForm6(body){
+  const idx = (await sget('idx:form5:'+currentStudentId))||[];
+  let rows='';
+  for(let i=0;i<Math.min(idx.length,2);i++){}
+  let curr=null, prev=null;
+  if(idx.length>0) curr = await sget('e:form5:'+currentStudentId+':'+idx[0]);
+  if(idx.length>1) prev = await sget('e:form5:'+currentStudentId+':'+idx[1]);
+  if(curr){
+    F5_ITEMS.forEach((it,i)=>{
+      const c = curr.scores[i], p = prev? prev.scores[i]: null;
+      rows += `<tr><td>${it}</td><td>${p!==null?p:'—'}</td><td>${c}</td><td>${arrow(c,p)}</td></tr>`;
+    });
+  }
+  body.innerHTML = `
+    <div class="kicker">فرم ۶ — مقایسهٔ خودکار دو پایش اخیر (فرم ۵)</div>
+    <h1 class="page-title">گزارش تحلیلی روند کارسنج</h1>
+    <div class="card">
+      ${curr? `<table class="entry-table"><thead><tr><th>شاخص</th><th>هفتهٔ قبل</th><th>هفتهٔ جاری</th><th>روند</th></tr></thead><tbody>${rows}</tbody></table>`
+      : '<div class="empty-hint">برای مشاهدهٔ روند، حداقل یک پایش هفتگی (فرم ۵) ثبت کنید.</div>'}
+    </div>
+    <div class="card">
+      <h3>تصمیم مسئول پایه</h3>
+      <div class="chk-group">
+        ${["ادامهٔ برنامه","اصلاح برنامه","افزایش پایش","جلسهٔ فردی","ورود به برنامهٔ حمایتی"].map(o=>`<label><input type="radio" name="f6decision" value="${o}"> ${o}</label>`).join('')}
+      </div>
+      <div class="field-row" style="margin-top:12px"><label>اقدام ماه آینده</label><textarea id="f6action"></textarea></div>
+    </div>
+  `;
+}
+
+/* ================= FORM 7 (coaching sessions, timeseries) ================= */
+async function renderForm7(body){
+  const idxKey = 'idx:form7:'+currentStudentId;
+  const idx = (await sget(idxKey))||[];
+  let scores = Array(F7_ITEMS.length).fill(0);
+  body.innerHTML = `
+    <div class="kicker">فرم ۷</div>
+    <h1 class="page-title">کوچینگ و بازخورد فردی — شش‌هفته‌ای</h1>
+    <div class="card">
+      <h3>جلسهٔ جدید</h3>
+      <div class="field-grid">
+        <div class="field-row"><label>دوره</label><input type="text" id="f7period" placeholder="مثلاً دورهٔ دوم"></div>
+        <div class="field-row"><label>نمرهٔ خود دانش‌آموز از عملکرد (۱ تا ۱۰)</label><input type="number" id="f7selfScore" min="0" max="10"></div>
+      </div>
+      <div class="field-row"><label>مهم‌ترین موفقیت / مشکل دانش‌آموز</label><textarea id="f7voice"></textarea></div>
+      <h3 style="margin-top:18px">ارزیابی مسئول پایه</h3>
+      <div id="f7rating"></div>
+      <div id="f7score"></div>
+      <div class="field-grid" style="margin-top:14px">
+        <div class="field-row"><label>هدف اصلی شش‌هفتهٔ آینده</label><input type="text" id="f7goal"></div>
+        <div class="field-row"><label>تاریخ بازبینی</label><input type="text" id="f7review"></div>
+      </div>
+      <div class="btn-row"><button class="btn btn-primary" id="f7save">ثبت جلسه</button><span class="saved-note" id="f7saved">ذخیره شد</span></div>
+    </div>
+    <div class="card"><h3>سوابق جلسات</h3><div id="f7hist"></div></div>
+  `;
+  function updateScore(){ const t=scores.reduce((a,b)=>a+b,0); document.getElementById('f7score').innerHTML = `<div class="score-pill">${t} / ۳۰</div>`; }
+  ratingWidget('f7rating', F7_ITEMS, scores, updateScore); updateScore();
+  document.getElementById('f7save').onclick = async ()=>{
+    const id = uid();
+    const entry = {
+      period: document.getElementById('f7period').value,
+      selfScore: document.getElementById('f7selfScore').value,
+      voice: document.getElementById('f7voice').value,
+      scores: [...scores], total: scores.reduce((a,b)=>a+b,0),
+      goal: document.getElementById('f7goal').value,
+      review: document.getElementById('f7review').value,
+      date: new Date().toLocaleDateString('fa-IR'),
+    };
+    await sset('e:form7:'+currentStudentId+':'+id, entry);
+    await idxAdd(idxKey, id);
+    flashSaved('f7saved');
+    renderForm7(body);
+  };
+  const hist = document.getElementById('f7hist');
+  if(!idx.length){ hist.innerHTML='<div class="empty-hint">هنوز جلسه‌ای ثبت نشده است.</div>'; return; }
+  let html='';
+  for(const id of idx){
+    const e = await sget('e:form7:'+currentStudentId+':'+id);
+    if(!e) continue;
+    html += `<div class="history-item"><div class="hh"><b>${e.period||'جلسه'} <span style="color:var(--ink-soft);font-weight:400">— ${e.date}</span></b><button class="del" data-id="${id}">حذف</button></div>
+      <div style="font-size:13px">امتیاز مسئول پایه: ${e.total}/۳۰ | خودارزیابی دانش‌آموز: ${e.selfScore||'—'}/۱۰</div>
+      <div style="font-size:12.5px;color:var(--ink-soft);margin-top:4px">هدف بعدی: ${e.goal||'—'} — بازبینی: ${e.review||'—'}</div>
+    </div>`;
+  }
+  hist.innerHTML = html;
+  hist.querySelectorAll('.del').forEach(b=> b.onclick = async ()=>{ await idxRemove(idxKey,b.dataset.id); renderForm7(body); });
+}
+
+/* ================= FORM 8 (early warning, timeseries) ================= */
+async function renderForm8(body){
+  const idxKey = 'idx:form8:'+currentStudentId;
+  const idx = (await sget(idxKey))||[];
+  body.innerHTML = `
+    <div class="kicker">فرم ۸</div>
+    <h1 class="page-title">نظام هشدار زودهنگام</h1>
+    <p class="page-sub">این فرم زمانی تکمیل می‌شود که در داده‌های پایش نشانهٔ افت مشاهده شود</p>
+    <div class="card">
+      <h3>شاخص‌های هشدار</h3>
+      <div class="chk-group" id="f8items">
+        ${F8_ITEMS.map(it=>`<label><input type="checkbox" value="${it}"> ${it}</label>`).join('')}
+      </div>
+      <div id="f8level" style="margin-top:14px"></div>
+      <div class="field-grid" style="margin-top:10px">
+        <div class="field-row"><label>علت احتمالی</label><input type="text" id="f8cause"></div>
+        <div class="field-row"><label>اقدام فوری</label><input type="text" id="f8action"></div>
+      </div>
+      <div class="btn-row"><button class="btn btn-primary" id="f8save">ثبت هشدار</button><span class="saved-note" id="f8saved">ذخیره شد</span></div>
+    </div>
+    <div class="card"><h3>سوابق هشدار</h3><div id="f8hist"></div></div>
+  `;
+  function updateLevel(){
+    const count = document.querySelectorAll('#f8items input:checked').length;
+    document.getElementById('f8level').innerHTML = `تعداد نشانه‌ها: <b>${count}</b> &nbsp; ${levelTag(levelFromWarnCount(count))}`;
+  }
+  document.querySelectorAll('#f8items input').forEach(i=> i.onchange = updateLevel);
+  updateLevel();
+  document.getElementById('f8save').onclick = async ()=>{
+    const checked = [...document.querySelectorAll('#f8items input:checked')].map(i=>i.value);
+    const id = uid();
+    const entry = { signs: checked, count: checked.length, cause: document.getElementById('f8cause').value, action: document.getElementById('f8action').value, date: new Date().toLocaleDateString('fa-IR') };
+    await sset('e:form8:'+currentStudentId+':'+id, entry);
+    await idxAdd(idxKey, id);
+    flashSaved('f8saved');
+    renderForm8(body);
+  };
+  const hist = document.getElementById('f8hist');
+  if(!idx.length){ hist.innerHTML='<div class="empty-hint">هنوز هشداری ثبت نشده است.</div>'; return; }
+  let html='';
+  for(const id of idx){
+    const e = await sget('e:form8:'+currentStudentId+':'+id);
+    if(!e) continue;
+    html += `<div class="history-item"><div class="hh"><b>${e.date}</b><button class="del" data-id="${id}">حذف</button></div>
+      <div>${levelTag(levelFromWarnCount(e.count))} &nbsp; <span style="font-size:12px;color:var(--ink-soft)">${e.count} نشانه</span></div>
+      <div style="font-size:12.5px;margin-top:6px">${e.signs.join('، ')}</div>
+      ${e.action? `<div style="font-size:12.5px;margin-top:6px"><b>اقدام:</b> ${e.action}</div>`:''}
+    </div>`;
+  }
+  hist.innerHTML = html;
+  hist.querySelectorAll('.del').forEach(b=> b.onclick = async ()=>{ await idxRemove(idxKey,b.dataset.id); renderForm8(body); });
+}
+
+/* ================= FORM 9 (family report, timeseries) ================= */
+async function renderForm9(body){
+  const idxKey = 'idx:form9:'+currentStudentId;
+  const idx = (await sget(idxKey))||[];
+  body.innerHTML = `
+    <div class="kicker">فرم ۹</div>
+    <h1 class="page-title">گزارش ماهانه به خانواده</h1>
+    <div class="card">
+      <div class="field-grid">
+        <div class="field-row"><label>ماه</label><input type="text" id="f9month"></div>
+        <div class="field-row"><label>میانگین ساعت مطالعه</label><input type="text" id="f9hours"></div>
+      </div>
+      <div class="field-row"><label>مهم‌ترین پیشرفت</label><input type="text" id="f9progress"></div>
+      <div class="field-row"><label>مهم‌ترین نیاز بهبود</label><input type="text" id="f9need"></div>
+      <div class="field-row"><label>توصیه به خانواده</label><textarea id="f9advice" placeholder="مثلاً: پیگیری غیرمستقیم، پرهیز از تذکر مکرر، بررسی اجرای برنامه..."></textarea></div>
+      <div class="btn-row"><button class="btn btn-primary" id="f9save">ثبت گزارش ماه</button><span class="saved-note" id="f9saved">ذخیره شد</span></div>
+    </div>
+    <div class="card"><h3>سوابق گزارش خانواده</h3><div id="f9hist"></div></div>
+  `;
+  document.getElementById('f9save').onclick = async ()=>{
+    const id = uid();
+    const entry = {
+      month: document.getElementById('f9month').value, hours: document.getElementById('f9hours').value,
+      progress: document.getElementById('f9progress').value, need: document.getElementById('f9need').value,
+      advice: document.getElementById('f9advice').value, date: new Date().toLocaleDateString('fa-IR'),
+    };
+    await sset('e:form9:'+currentStudentId+':'+id, entry);
+    await idxAdd(idxKey, id);
+    flashSaved('f9saved');
+    renderForm9(body);
+  };
+  const hist = document.getElementById('f9hist');
+  if(!idx.length){ hist.innerHTML='<div class="empty-hint">هنوز گزارشی ثبت نشده است.</div>'; return; }
+  let html='';
+  for(const id of idx){
+    const e = await sget('e:form9:'+currentStudentId+':'+id);
+    if(!e) continue;
+    html += `<div class="history-item"><div class="hh"><b>${e.month||'بدون عنوان'}</b><button class="del" data-id="${id}">حذف</button></div>
+      <div style="font-size:13px">پیشرفت: ${e.progress||'—'} | نیاز بهبود: ${e.need||'—'}</div>
+      ${e.advice? `<div style="font-size:12.5px;margin-top:6px;white-space:pre-line">${e.advice}</div>`:''}
+    </div>`;
+  }
+  hist.innerHTML = html;
+  hist.querySelectorAll('.del').forEach(b=> b.onclick = async ()=>{ await idxRemove(idxKey,b.dataset.id); renderForm9(body); });
+}
+
+/* ================= FORM 10 (exam analysis, timeseries) ================= */
+async function renderForm10(body){
+  const idxKey = 'idx:form10:'+currentStudentId;
+  const idx = (await sget(idxKey))||[];
+  body.innerHTML = `
+    <div class="kicker">فرم ۱۰</div>
+    <h1 class="page-title">تحلیل آزمون و بازنگری برنامه</h1>
+    <div class="card">
+      <div class="field-grid cols-3">
+        <div class="field-row"><label>درس</label><input type="text" id="f10subject"></div>
+        <div class="field-row"><label>نمره</label><input type="number" id="f10score" step="0.25"></div>
+        <div class="field-row"><label>تاریخ آزمون</label><input type="text" id="f10date"></div>
+      </div>
+      <div class="field-row"><label>مشکل اصلی</label>
+        <div class="chk-group">
+          ${["دانش","درک","کاربرد","تحلیل","مدیریت زمان","دقت"].map(o=>`<label><input type="radio" name="f10issue" value="${o}"> ${o}</label>`).join('')}
+        </div>
+      </div>
+      <div class="field-row"><label>اقدام اصلاحی</label><textarea id="f10fix"></textarea></div>
+      <div class="btn-row"><button class="btn btn-primary" id="f10save">ثبت آزمون</button><span class="saved-note" id="f10saved">ذخیره شد</span></div>
+    </div>
+    <div class="card"><h3>سوابق آزمون‌ها</h3><div id="f10hist"></div></div>
+  `;
+  document.getElementById('f10save').onclick = async ()=>{
+    const issueEl = document.querySelector('input[name=f10issue]:checked');
+    const id = uid();
+    const entry = {
+      subject: document.getElementById('f10subject').value, score: document.getElementById('f10score').value,
+      date: document.getElementById('f10date').value, issue: issueEl? issueEl.value:'', fix: document.getElementById('f10fix').value,
+      logged: new Date().toLocaleDateString('fa-IR'),
+    };
+    await sset('e:form10:'+currentStudentId+':'+id, entry);
+    await idxAdd(idxKey, id);
+    flashSaved('f10saved');
+    renderForm10(body);
+  };
+  const hist = document.getElementById('f10hist');
+  if(!idx.length){ hist.innerHTML='<div class="empty-hint">هنوز آزمونی ثبت نشده است.</div>'; return; }
+  let rows='';
+  for(let i=0;i<idx.length;i++){
+    const e = await sget('e:form10:'+currentStudentId+':'+idx[i]);
+    if(!e) continue;
+    let prevScore = null;
+    for(let j=i+1;j<idx.length;j++){
+      const pe = await sget('e:form10:'+currentStudentId+':'+idx[j]);
+      if(pe && pe.subject===e.subject){ prevScore = parseFloat(pe.score); break; }
+    }
+    rows += `<tr><td>${e.subject}</td><td>${e.date||e.logged}</td><td>${e.score}</td><td>${arrow(parseFloat(e.score), prevScore)}</td><td>${e.issue||'—'}</td><td><button class="del" data-id="${idx[i]}" style="border:none;background:none;color:var(--red);cursor:pointer;font-family:inherit;font-size:12px">حذف</button></td></tr>`;
+  }
+  hist.innerHTML = `<table class="entry-table"><thead><tr><th>درس</th><th>تاریخ</th><th>نمره</th><th>روند</th><th>مشکل اصلی</th><th></th></tr></thead><tbody>${rows}</tbody></table>`;
+  hist.querySelectorAll('.del').forEach(b=> b.onclick = async ()=>{ await idxRemove(idxKey,b.dataset.id); renderForm10(body); });
+}
+
+/* ================= FORM 12 (class-wide monthly, auto + notes) ================= */
+async function renderForm12(body){
+  const idxKey = 'idx:form12:class';
+  const idx = (await sget(idxKey))||[];
+  let counts = {green:0,yellow:0,orange:0,red:0};
+  for(const s of students){
+    const f8idx = (await sget('idx:form8:'+s.id))||[];
+    let lvl = {c:'green'};
+    if(f8idx.length){ const last = await sget('e:form8:'+s.id+':'+f8idx[0]); if(last) lvl = levelFromWarnCount(last.count); }
+    counts[lvl.c]++;
+  }
+  body.innerHTML = `
+    <div class="kicker">فرم ۱۲</div>
+    <h1 class="page-title">گزارش ماهانهٔ مسئول پایه</h1>
+    <div class="stat-grid">
+      <div class="stat-card"><div class="n">${students.length}</div><div class="lab">تعداد کل دانش‌آموزان</div></div>
+      <div class="stat-card" style="border-top-color:var(--green)"><div class="n">${counts.green}</div><div class="lab">وضعیت سبز</div></div>
+      <div class="stat-card" style="border-top-color:var(--orange)"><div class="n">${counts.orange}</div><div class="lab">نیازمند پیگیری</div></div>
+      <div class="stat-card" style="border-top-color:var(--red)"><div class="n">${counts.red}</div><div class="lab">نیازمند مداخله</div></div>
+    </div>
+    <div class="card">
+      <h3>سه یافتهٔ اصلی ماه</h3>
+      <div class="field-row"><textarea id="f12finding" placeholder="یک یافته در هر خط بنویسید"></textarea></div>
+      <h3 style="margin-top:16px">سه اقدام ماه آینده</h3>
+      <div class="field-row"><textarea id="f12action" placeholder="یک اقدام در هر خط بنویسید"></textarea></div>
+      <div class="field-row"><label>ماه</label><input type="text" id="f12month" style="max-width:220px"></div>
+      <div class="btn-row"><button class="btn btn-primary" id="f12save">ثبت گزارش ماه</button><span class="saved-note" id="f12saved">ذخیره شد</span></div>
+    </div>
+    <div class="card"><h3>سوابق گزارش‌های ماهانه</h3><div id="f12hist"></div></div>
+  `;
+  document.getElementById('f12save').onclick = async ()=>{
+    const id = uid();
+    const entry = { month: document.getElementById('f12month').value, findings: document.getElementById('f12finding').value, actions: document.getElementById('f12action').value, counts, date: new Date().toLocaleDateString('fa-IR') };
+    await sset('e:form12:class:'+id, entry);
+    await idxAdd(idxKey, id);
+    flashSaved('f12saved');
+    renderForm12(body);
+  };
+  const hist = document.getElementById('f12hist');
+  if(!idx.length){ hist.innerHTML='<div class="empty-hint">هنوز گزارشی ثبت نشده است.</div>'; return; }
+  let html='';
+  for(const id of idx){
+    const e = await sget('e:form12:class:'+id);
+    if(!e) continue;
+    html += `<div class="history-item"><div class="hh"><b>${e.month||'بدون عنوان'}</b><button class="del" data-id="${id}">حذف</button></div>
+      <div style="font-size:12.5px;white-space:pre-line"><b>یافته‌ها:</b> ${e.findings||'—'}</div>
+      <div style="font-size:12.5px;white-space:pre-line;margin-top:4px"><b>اقدام‌ها:</b> ${e.actions||'—'}</div>
+    </div>`;
+  }
+  hist.innerHTML = html;
+  hist.querySelectorAll('.del').forEach(b=> b.onclick = async ()=>{ await idxRemove(idxKey,b.dataset.id); renderForm12(body); });
+}
+
+/* ================= util ================= */
+function flashSaved(id){
+  const el = document.getElementById(id);
+  if(!el) return;
+  el.classList.add('show');
+  setTimeout(()=> el.classList.remove('show'), 1600);
+}
+
+/* ================= init ================= */
+async function init(){
+  students = (await sget('students')) || [];
+  if(students.length && !currentStudentId) currentStudentId = students[0].id;
+  render();
+}
+init();
+</script>
+</body>
+</html>
